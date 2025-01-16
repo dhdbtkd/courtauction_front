@@ -11,4 +11,5 @@ export interface Auction {
     estimated_price: number;
     minimum_price: number;
     status: string;
+    failed_auction_count: number;
 }
