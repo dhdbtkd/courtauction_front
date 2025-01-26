@@ -2,8 +2,6 @@ import { Auction } from '../types/Auction';
 import Image from 'next/image';
 
 export const AuctionRow = ({ auction }: { auction: Auction }) => {
-    console.log(auction);
-
     function formatDate(dateString: string): string {
         const date = new Date(dateString);
 
@@ -21,13 +19,13 @@ export const AuctionRow = ({ auction }: { auction: Auction }) => {
             data-sidocode={auction.sido_code}
             data-sigucode={auction.sigu_code}
         >
-            <Image
+            {/* <Image
                 src={auction.thumbnail_src} // Path to your image in the "public" folder
                 alt={`Image of ${auction.case_id}`} // alt description
                 width={300} // Set the width of the image
                 height={300} // Set the height of the image
                 objectFit="cover" // Set the object-fit property of the image
-            />
+            /> */}
             <div className="mx-2">{auction.court}</div>
             <div className="mx-2">{auction.case_id.replace('타경', '-')}</div>
             <div className="mx-2 col-span-2">{auction.address}</div>
@@ -36,7 +34,7 @@ export const AuctionRow = ({ auction }: { auction: Auction }) => {
             <div className="mx-2">{(auction.estimated_price / 10000).toLocaleString()} 만원</div>
             <div className="mx-2">{(auction.minimum_price / 10000).toLocaleString()} 만원</div>
             <div className="mx-2 text-center">
-                w{auction.status}
+                {auction.status}
                 {auction.status !== '신건' && (
                     <div className={`text-[0.65rem]  flex items-center justify-center`}>
                         <div className="bg-rose-400 text-white rounded px-2 py-0.5 text-center">

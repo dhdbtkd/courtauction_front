@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import RootStyleRegistry from './emotion';
+import { AuthContext } from './context/AuthContext';
 
 import './globals.css';
 
@@ -27,7 +28,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <RootStyleRegistry>{children}</RootStyleRegistry>
+                <AuthContext>
+                    <RootStyleRegistry>{children}</RootStyleRegistry>
+                </AuthContext>
             </body>
         </html>
     );
