@@ -14,7 +14,11 @@ const handler = NextAuth({
             clientSecret: process.env.NAVER_CLIENT_SECRET || '',
         })
     ],
-    debug: true
+    pages: {
+        signIn: '/signin',
+        error: '/auth/error',
+    },
+    debug: process.env.NODE_ENV === 'development'
 });
 console.log('naver', process.env.NAVER_CLIENT_ID, process.env.NAVER_CLIENT_SECRET)
 
