@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import RootStyleRegistry from './emotion';
-import { AuthContext } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import { SessionProvider } from 'next-auth/react';
+import SessionProviderWrapper from './SessionProviderWrapper';
 
 import './globals.css';
 
@@ -28,9 +30,11 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <AuthContext>
-                    <RootStyleRegistry>{children}</RootStyleRegistry>
-                </AuthContext>
+                <SessionProviderWrapper>
+                    <AuthProvider>
+                        <RootStyleRegistry>{children}</RootStyleRegistry>
+                    </AuthProvider>
+                </SessionProviderWrapper>
             </body>
         </html>
     );

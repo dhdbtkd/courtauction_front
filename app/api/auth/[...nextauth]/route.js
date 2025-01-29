@@ -3,7 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import NaverProvider from 'next-auth/providers/naver';
 
-const handler = NextAuth({
+export const authOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -33,7 +33,8 @@ const handler = NextAuth({
         secret: process.env.JWT_SECRET,
     },
     debug: process.env.NODE_ENV === 'development'
-});
+}
+const handler = NextAuth(authOptions);
 console.log('naver', process.env.NAVER_CLIENT_ID, process.env.NAVER_CLIENT_SECRET)
 
 export { handler as GET, handler as POST };
