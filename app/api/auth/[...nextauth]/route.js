@@ -14,9 +14,23 @@ const handler = NextAuth({
             clientSecret: process.env.NAVER_CLIENT_SECRET || '',
         })
     ],
+    callbacks: {
+        async signIn({ user, account, profile }) {
+            console.log(`user : ${user} \n account : ${account} \n profile : ${profile}`);
+            console.log(user)
+            // 특정 조건에서 로그인 거부
+            if (profile?.email?.includes('blockedomain.com')) {
+                return false;
+            }
+            return true;
+        }
+    },
     pages: {
         signIn: '/signin',
         error: '/auth/error',
+    },
+    jwt: {
+        secret: process.env.JWT_SECRET,
     },
     debug: process.env.NODE_ENV === 'development'
 });
