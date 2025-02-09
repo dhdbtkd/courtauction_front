@@ -1,3 +1,4 @@
+'use client';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import { useAuth } from '../context/AuthContext';
@@ -50,7 +51,13 @@ export default function Header() {
                 <div className="flex flex-col">
                     {user?.image && (
                         <div className="w-16 h-16 relative">
-                            <Image className="rounded-full" src={user.image} alt="logo" fill />
+                            <Image
+                                className="rounded-full z-0 w-auto h-auto"
+                                src={user.image}
+                                alt="logo"
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
                         </div>
                     )}
 

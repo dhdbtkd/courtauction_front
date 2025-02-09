@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
                 protocol: 'https',
                 hostname: 'phinf.pstatic.net',
             },
+            {
+                // 매물
+                protocol: 'http',
+                hostname: 'oracle.artchive.in',
+            },
         ],
     },
 };

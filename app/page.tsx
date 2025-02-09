@@ -12,10 +12,23 @@ import Header from './components/Header';
 //     margin-bottom: 1rem;
 //     text-align: center;
 // `;
+
 export default function Home() {
     const [auctions, setAuctions] = useState([]);
     const [error, setError] = useState<string | null>(null);
     useEffect(() => {
+        const fetchCategories = async (category: string) => {
+            try {
+                const response = await fetch(`/api/category/${category}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch auctions');
+                }
+                const data = await response.json();
+                console.log('🚀 ~ fetchCategories ~ data:', data);
+            } catch (error) {
+                setError(error.message);
+            }
+        };
         const fetchAuctions = async () => {
             try {
                 const response = await fetch('/api/auctions');
@@ -28,7 +41,8 @@ export default function Home() {
                 setError(error.message);
             }
         };
-
+        fetchCategories('sido');
+        fetchCategories('sigu');
         fetchAuctions();
     }, []);
     if (error) {
@@ -39,8 +53,8 @@ export default function Home() {
             {/* <Header>법원 경매 매물</Header> */}
             <Header></Header>
             <ul>
-                <li className="grid grid-cols-10 gap-2 text-xs py-0.5 border-b border-gray-300 my-0.5">
-                    <div>사진</div>
+                <li className="grid grid-cols-11 gap-2 text-xs py-0.5 border-b border-gray-300 my-0.5">
+                    <div className="col-span-2">사진</div>
                     <div className="mx-2">담당</div>
                     <div className="mx-2">번호</div>
                     <div className="mx-2 col-span-2">주소</div>

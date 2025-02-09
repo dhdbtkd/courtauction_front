@@ -14,18 +14,18 @@ export const AuctionRow = ({ auction }: { auction: Auction }) => {
 
     return (
         <li
-            className="grid grid-cols-10 gap-2 text-xs py-0.5 border-b border-gray-100 my-0.5"
+            className="grid grid-cols-11 gap-2 text-xs py-2 border-b border-gray-100 my-0.5"
             key={auction.id}
             data-sidocode={auction.sido_code}
             data-sigucode={auction.sigu_code}
         >
-            {/* <Image
+            <Image
                 src={auction.thumbnail_src} // Path to your image in the "public" folder
                 alt={`Image of ${auction.case_id}`} // alt description
                 width={300} // Set the width of the image
                 height={300} // Set the height of the image
-                objectFit="cover" // Set the object-fit property of the image
-            /> */}
+                className="aspect-video object-cover rounded-lg col-span-2 w-auto h-auto"
+            />
             <div className="mx-2">{auction.court}</div>
             <div className="mx-2">{auction.case_id.replace('타경', '-')}</div>
             <div className="mx-2 col-span-2">{auction.address}</div>
