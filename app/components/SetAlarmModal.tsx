@@ -1,13 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CiTrash } from 'react-icons/ci';
+import { Regions } from '../page';
 
 interface ModalProps {
+    regions: Regions | null;
     isOpen: boolean;
     closeModal: () => void;
 }
 
-const SetAlarmModal = ({ isOpen, closeModal }: ModalProps) => {
+const SetAlarmModal = ({ isOpen, closeModal, regions }: ModalProps) => {
+    const [selectedSidoCode, setSelectedSidoCode] = useState<number | null>(null);
+
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     //모달 열기
@@ -16,9 +20,13 @@ const SetAlarmModal = ({ isOpen, closeModal }: ModalProps) => {
     } else if (!isOpen && dialogRef.current) {
         dialogRef.current?.close();
     }
-
+    const handleSidoSelect = (e: any) => {
+        setSelectedSidoCode(e.target.value);
+        console.log('🚀 ~ handleSidoSelect ~ e.target.value:', e.target.value);
+    };
     useEffect(() => {
         console.log('modal');
+        console.log(regions);
     }, []);
     return (
         <AnimatePresence>
@@ -78,12 +86,18 @@ const SetAlarmModal = ({ isOpen, closeModal }: ModalProps) => {
                                     id="countries"
                                     defaultValue={'시도'}
                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
+                                    onChange={handleSidoSelect}
                                 >
                                     <option>시도</option>
-                                    <option value="US">United States</option>
-                                    <option value="CA">Canada</option>
-                                    <option value="FR">France</option>
-                                    <option value="DE">Germany</option>
+                                    {regions?.sido
+                                        ? regions?.sido.map((sido) => {
+                                              return (
+                                                  <option key={sido.sido_code} value={sido.sido_code}>
+                                                      {sido.sido_name}
+                                                  </option>
+                                              );
+                                          })
+                                        : ''}
                                 </select>
                                 <select
                                     id="countries"
@@ -91,10 +105,17 @@ const SetAlarmModal = ({ isOpen, closeModal }: ModalProps) => {
                                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 "
                                 >
                                     <option>군구</option>
-                                    <option value="US">United States</option>
-                                    <option value="CA">Canada</option>
-                                    <option value="FR">France</option>
-                                    <option value="DE">Germany</option>
+                                    {regions?.sigu
+                                        ? regions?.sigu
+                                              .filter((sigu) => sigu['sido_code'] == selectedSidoCode)
+                                              .map((sigu) => {
+                                                  return (
+                                                      <option key={sigu.sigu_code} value={sigu.sigu_name}>
+                                                          {sigu.sigu_name}
+                                                      </option>
+                                                  );
+                                              })
+                                        : ''}
                                 </select>
                             </form>
                             <div className="flex justify-end items-center gap-2">

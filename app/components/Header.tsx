@@ -9,6 +9,11 @@ import styled from '@emotion/styled';
 import SetAlarmModal from './SetAlarmModal';
 import { useState } from 'react';
 
+import { Regions } from '../page';
+interface HeaderProps {
+    regions: Regions | null;
+}
+
 const Button = styled.button`
     background-color: #4d4d4d;
     border-radius: 0.5rem;
@@ -25,7 +30,7 @@ const Button = styled.button`
     justify-content: center;
 `;
 
-export default function Header() {
+export default function Header(props: HeaderProps) {
     const [isModalOpen, setModalOpen] = useState(false);
 
     const { user, status } = useAuth();
@@ -42,6 +47,7 @@ export default function Header() {
     return (
         <>
             <SetAlarmModal
+                regions={props.regions}
                 isOpen={isModalOpen}
                 closeModal={() => {
                     setModalOpen(false);

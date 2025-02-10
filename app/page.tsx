@@ -12,9 +12,25 @@ import Header from './components/Header';
 //     margin-bottom: 1rem;
 //     text-align: center;
 // `;
+interface Sido {
+    id: number;
+    sido_code: number;
+    sido_name: string;
+}
+interface Sigu extends Pick<Sido, 'sido_code' | 'sido_name'> {
+    id: number;
+    sigu_code: number;
+    sigu_name: string;
+}
+
+export interface Regions {
+    sigu: Sigu[];
+    sido: Sido[];
+}
 
 export default function Home() {
     const [auctions, setAuctions] = useState([]);
+    const [regions, setRegions] = useState<Regions | null>(null);
     const [error, setError] = useState<string | null>(null);
     useEffect(() => {
         const fetchCategories = async (category: string) => {
@@ -25,6 +41,7 @@ export default function Home() {
                 }
                 const data = await response.json();
                 console.log('🚀 ~ fetchCategories ~ data:', data);
+                return data;
             } catch (error) {
                 setError(error.message);
             }
@@ -41,17 +58,31 @@ export default function Home() {
                 setError(error.message);
             }
         };
-        fetchCategories('sido');
-        fetchCategories('sigu');
+        const fetchData = async () => {
+            try {
+                const [sidos, sigus] = await Promise.all([fetchCategories('sido'), fetchCategories('sigu')]);
+                setRegions({
+                    sido: sidos,
+                    sigu: sigus,
+                });
+            } catch (error) {
+                console.log('error', error);
+            }
+        };
+        fetchData();
         fetchAuctions();
     }, []);
+    useEffect(() => {
+        console.log('Updated regions:', regions);
+    }, [regions]); // regions가 변경될 때 실행
+
     if (error) {
         return <div>Error: {error}</div>;
     }
     return (
         <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
             {/* <Header>법원 경매 매물</Header> */}
-            <Header></Header>
+            <Header regions={regions}></Header>
             <ul>
                 <li className="grid grid-cols-11 gap-2 text-xs py-0.5 border-b border-gray-300 my-0.5">
                     <div className="col-span-2">사진</div>
