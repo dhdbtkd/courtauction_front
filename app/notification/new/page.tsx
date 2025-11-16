@@ -202,7 +202,7 @@ export default function NotificationRulePage() {
     return (
         <div className="max-w-2xl mx-auto my-10 space-y-8">
             {/* --- 1. 텔레그램 연동 --- */}
-            <Card className="shadow-md rounded-2xl">
+            <Card className="shadow-md rounded-2xl max-xl:m-3">
                 <CardBody className="flex flex-col items-center gap-4 py-6">
                     <MessageCircle className="text-primary w-6 h-6" />
                     {telegramLoading ? (
@@ -223,12 +223,12 @@ export default function NotificationRulePage() {
             </Card>
 
             {/* --- 2. 알림 조건 추가 --- */}
-            <Card className="shadow-md rounded-2xl">
+            <Card className="shadow-md rounded-2xl max-xl:m-3 ">
                 <CardHeader className="flex items-center gap-2">
                     <Bell className="text-primary max-xl:w-4 max-xl:h-4" />
                     <h2 className="font-semibold text-sm xl:text-lg">새 알림 조건 추가</h2>
                 </CardHeader>
-                <CardBody className="flex flex-col gap-6 max-xl:text-xs">
+                <CardBody className="flex flex-col gap-6 max-xl:text-xs overflow-hidden">
                     {regionsLoading ? (
                         <div className="flex justify-center items-center py-8">
                             <Spinner color="primary" />
@@ -360,8 +360,8 @@ export default function NotificationRulePage() {
             </Card>
 
             {/* --- 3. 알림 목록 --- */}
-            <div className="space-y-4">
-                <h2 className="flex items-center gap-2 text-xl font-semibold">
+            <div className="space-y-4 max-xl:m-3">
+                <h2 className="flex items-center gap-2 text-xl font-semibold max-lg:text-sm">
                     <List className="text-gray-700" />
                     등록된 알림 조건
                 </h2>
