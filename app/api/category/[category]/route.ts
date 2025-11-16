@@ -32,9 +32,9 @@ function isValidCategoryType(category: string): category is CategoryType {
     return ['sido', 'sigu', 'dong'].includes(category);
 }
 
-export async function GET(request: NextRequest, { params }: { params: { category: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ category: string }> }) {
     try {
-        const { category } = await params;
+        const { category } = await context.params;
         console.log(category);
         if (!isValidCategoryType(category)) {
             return NextResponse.json(

@@ -1,8 +1,8 @@
 'use client';
 
-import { Session } from 'inspector/promises';
-import { SessionProvider, useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface User {
     name: string;
@@ -15,12 +15,20 @@ interface AuthContetType {
     status: 'loading' | 'authenticated' | 'unauthenticated';
 }
 
-//Context API를 사용하여 인증 상태를 관리하는 AuthContext를 생성합니다.
 const AuthContext = createContext<AuthContetType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: session, status } = useSession();
     const [user, setUser] = useState<User | null>(null);
+    const router = useRouter();
+
+    // 🔥 세션 만료 또는 비로그인 상태 자동 이동 처리
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            signOut({ redirect: false }); // NextAuth 세션 정리
+            router.replace('/signin'); // 로그인 페이지로 이동
+        }
+    }, [status, router]);
 
     useEffect(() => {
         if (session?.user) {
@@ -44,11 +52,3 @@ export const useAuth = () => {
     }
     return context;
 };
-
-// interface AuthProps {
-//     children: React.ReactNode;
-// }
-
-// export const AuthContext = ({ children }: AuthProps) => {
-//     return <SessionProvider>{children}</SessionProvider>;
-// };

@@ -2,6 +2,7 @@ import { Auction } from '../types/Auction';
 import Image from 'next/image';
 
 export const AuctionRow = ({ auction }: { auction: Auction }) => {
+    console.log('🚀 ~ AuctionRow ~ auction:', auction);
     function formatDate(dateString: string): string {
         const date = new Date(dateString);
 
@@ -20,19 +21,23 @@ export const AuctionRow = ({ auction }: { auction: Auction }) => {
             data-sigucode={auction.sigu_code}
         >
             <Image
-                src={auction.thumbnail_src} // Path to your image in the "public" folder
+                src={auction.thumbnail_src ?? '/default.jpg'}
                 alt={`Image of ${auction.case_id}`} // alt description
                 width={300} // Set the width of the image
                 height={300} // Set the height of the image
                 className="aspect-video object-cover rounded-lg col-span-2 w-auto h-auto"
             />
             <div className="mx-2">{auction.court}</div>
-            <div className="mx-2">{auction.case_id.replace('타경', '-')}</div>
+            <div className="mx-2">{auction.case_id?.replace('타경', '-') ?? '-'}</div>
             <div className="mx-2 col-span-2">{auction.address}</div>
 
-            <div className="mx-2">{auction.area.toFixed(1)} m2</div>
-            <div className="mx-2">{(auction.estimated_price / 10000).toLocaleString()} 만원</div>
-            <div className="mx-2">{(auction.minimum_price / 10000).toLocaleString()} 만원</div>
+            <div className="mx-2">{auction.area != null ? `${auction.area.toFixed(1)} m²` : '-'}</div>
+            <div className="mx-2">
+                {auction.estimated_price != null ? (auction.estimated_price / 10000).toLocaleString() + ' 만원' : '-'}
+            </div>
+            <div className="mx-2">
+                {auction.minimum_price != null ? (auction.minimum_price / 10000).toLocaleString() + '만원' : '-'}
+            </div>
             <div className="mx-2 text-center">
                 {auction.status}
                 {auction.status !== '신건' && (

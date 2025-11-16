@@ -1,15 +1,21 @@
 export interface Auction {
-    id: number;
-    court: string;
-    case_id: string;
-    created_at: string;
-    address: string;
-    area: number;
-    sido_code: number;
-    sigu_code: number;
-    thumbnail_src: string;
-    estimated_price: number;
-    minimum_price: number;
-    status: string;
-    failed_auction_count: number;
+    id: number | string;
+    court: string | null;
+    case_id: string | null;
+    category: string | null;
+    address: string | null;
+    area: number | null;
+    estimated_price: number | null; // DB: estimated_price
+    minimum_price: number | null; // DB: minimum_price
+    etc: string | null;
+    created_at: string; // or Date
+    updated_at: string | null; // or Date | null
+    status: string | null;
+    auction_date: string | null; // or Date | null
+    failed_auction_count: number | null; // DB: failed_auction_count
+    sido_code: number | null;
+    sigu_code: number | null;
+    sold_price: number | null;
+    sold_date: string | null; // or Date | null
+    thumbnail_src: string | null; // DB: thumbnail_src
 }
