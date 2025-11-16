@@ -34,8 +34,8 @@ export default function NotificationRulePage() {
 
     const [name, setName] = useState('');
     const [keyword, setKeyword] = useState('');
-    const [selectedSido, setSelectedSido] = useState<number | null>(null);
-    const [selectedSigu, setSelectedSigu] = useState<number | null>(null);
+    const [selectedSido, setSelectedSido] = useState<string | null>(null);
+    const [selectedSigu, setSelectedSigu] = useState<string | null>(null);
     const [category, setCategory] = useState('전체');
 
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]); // 0만원~20억
@@ -211,7 +211,7 @@ export default function NotificationRulePage() {
                         <p className="text-green-700 font-semibold">텔레그램 연동 완료!</p>
                     ) : (
                         <>
-                            <p className="text-gray-600 text-center">
+                            <p className="text-gray-600 text-center md:text-sm text-xs">
                                 텔레그램을 연동하면 새 매물 알림을 실시간으로 받을 수 있습니다.
                             </p>
                             <Button color="primary" onPress={handleTelegramConnect}>
@@ -225,10 +225,10 @@ export default function NotificationRulePage() {
             {/* --- 2. 알림 조건 추가 --- */}
             <Card className="shadow-md rounded-2xl">
                 <CardHeader className="flex items-center gap-2">
-                    <Bell className="text-primary" />
-                    <h2 className="text-xl font-semibold">새 알림 조건 추가</h2>
+                    <Bell className="text-primary max-xl:w-4 max-xl:h-4" />
+                    <h2 className="font-semibold text-sm xl:text-lg">새 알림 조건 추가</h2>
                 </CardHeader>
-                <CardBody className="flex flex-col gap-6">
+                <CardBody className="flex flex-col gap-6 max-xl:text-xs">
                     {regionsLoading ? (
                         <div className="flex justify-center items-center py-8">
                             <Spinner color="primary" />
@@ -243,35 +243,39 @@ export default function NotificationRulePage() {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     isRequired
+                                    size="sm"
                                 />
                                 <Input
                                     label="키워드 (선택)"
                                     placeholder="예: 래미안, 아크로"
                                     value={keyword}
                                     onChange={(e) => setKeyword(e.target.value)}
+                                    size="sm"
                                 />
                                 <Select
                                     label="시/도"
-                                    selectedKeys={selectedSido ? new Set([String(selectedSido)]) : new Set()}
+                                    selectedKeys={selectedSido ? new Set([selectedSido]) : new Set()}
                                     onSelectionChange={(keys) => {
                                         const value = Array.from(keys)[0];
-                                        setSelectedSido(value ? Number(value) : null);
+                                        setSelectedSido(value ? String(value) : null);
                                     }}
                                     items={sidos}
+                                    size="sm"
                                 >
-                                    {(item) => <SelectItem key={String(item.sido_code)}>{item.sido_name}</SelectItem>}
+                                    {(item) => <SelectItem key={item.sido_code}>{item.sido_name}</SelectItem>}
                                 </Select>
                                 <Select
                                     label="구/군"
-                                    selectedKeys={selectedSigu ? new Set([String(selectedSigu)]) : new Set()}
+                                    size="sm"
+                                    selectedKeys={selectedSigu ? new Set([selectedSigu]) : new Set()}
                                     onSelectionChange={(keys) => {
                                         const value = Array.from(keys)[0];
-                                        setSelectedSigu(value ? Number(value) : null);
+                                        setSelectedSigu(value ? String(value) : null);
                                     }}
                                     isDisabled={!selectedSido}
                                     items={sortedSigus}
                                 >
-                                    {(item) => <SelectItem key={String(item.sigu_code)}>{item.sigu_name}</SelectItem>}
+                                    {(item) => <SelectItem key={item.sigu_code}>{item.sigu_name}</SelectItem>}
                                 </Select>
 
                                 <Select
@@ -282,19 +286,21 @@ export default function NotificationRulePage() {
                                         if (value) setCategory(String(value));
                                     }}
                                     items={propertyTypes}
+                                    size="sm"
                                 >
                                     {(item) => <SelectItem key={item.key}>{item.name}</SelectItem>}
                                 </Select>
                             </div>
 
                             {/* 💰 가격 범위 */}
-                            <div>
+                            <div className="max-lg:text-xs">
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="block text-sm font-medium text-gray-700">가격 범위</label>
                                     <Checkbox
                                         isSelected={noPriceLimit}
                                         onChange={(e) => setNoPriceLimit(e.target.checked)}
                                         color="primary"
+                                        size="sm"
                                     >
                                         제한 없음
                                     </Checkbox>
@@ -316,10 +322,11 @@ export default function NotificationRulePage() {
                             </div>
 
                             {/* 📐 면적 범위 */}
-                            <div>
+                            <div className="max-xl:textxs">
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="block text-sm font-medium text-gray-700">면적 범위 (㎡)</label>
                                     <Checkbox
+                                        size="sm"
                                         isSelected={noAreaLimit}
                                         onChange={(e) => setNoAreaLimit(e.target.checked)}
                                         color="primary"

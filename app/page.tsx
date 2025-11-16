@@ -9,13 +9,13 @@ import { MapPin, List, Banknote, Search } from 'lucide-react';
 // 지역 인터페이스 정의
 interface Sido {
     id: number;
-    sido_code: number;
+    sido_code: string;
     sido_name: string;
 }
 
 interface Sigu extends Pick<Sido, 'sido_code'> {
     id: number;
-    sigu_code: number;
+    sigu_code: string;
     sigu_name: string;
 }
 
@@ -117,13 +117,8 @@ export default function Home() {
 
             const [sidos, sigus] = await Promise.all([sidosRes.json(), sigusRes.json()]);
 
-            // 🔥🔥 sigu_code 정규화: 앞 2자리 제거 (시/도 코드 제거)
-            const normalizedSigus = sigus.map((s: Sigu) => ({
-                ...s,
-                sigu_code: Number(String(s.sigu_code).slice(2)), // 뒤 3자리만
-            }));
-
-            setRegions({ sido: sidos, sigu: normalizedSigus });
+            // sigu_code는 이미 text 포맷이므로 정규화 불필요
+            setRegions({ sido: sidos, sigu: sigus });
         } catch (err) {
             setError('지역 정보를 불러오는 중 오류가 발생했습니다.');
         }
@@ -179,12 +174,12 @@ export default function Home() {
     const filteredSigu =
         !filters.sido_code || filters.sido_code === '-1'
             ? regions?.sigu || []
-            : regions?.sigu?.filter((s) => s.sido_code.toString() === filters.sido_code) || [];
+            : regions?.sigu?.filter((s) => s.sido_code === filters.sido_code) || [];
 
     // Sido, Sigu 인터페이스에 맞게 "전체" 옵션 추가 (고유한 id/key 필요)
-    const sidosWithAll: Sido[] = [{ id: -1, sido_code: -1, sido_name: '전체' }, ...(regions?.sido || [])];
+    const sidosWithAll: Sido[] = [{ id: -1, sido_code: '-1', sido_name: '전체' }, ...(regions?.sido || [])];
 
-    const sigusWithAll: Sigu[] = [{ id: -1, sigu_code: -1, sigu_name: '전체', sido_code: -1 }, ...filteredSigu];
+    const sigusWithAll: Sigu[] = [{ id: -1, sigu_code: '-1', sigu_name: '전체', sido_code: '-1' }, ...filteredSigu];
 
     return (
         <div className="min-h-screen bg-gray-50 pb-10">
@@ -243,7 +238,7 @@ export default function Home() {
                                 items={sidosWithAll}
                                 aria-label="시/도 선택"
                             >
-                                {(s) => <SelectItem key={s.sido_code.toString()}>{s.sido_name}</SelectItem>}
+                                {(s) => <SelectItem key={s.sido_code}>{s.sido_name}</SelectItem>}
                             </Select>
 
                             {/* 4. 시/군/구 Select */}
@@ -255,7 +250,7 @@ export default function Home() {
                                 items={sigusWithAll}
                                 aria-label="시/군/구 선택"
                             >
-                                {(s) => <SelectItem key={s.sigu_code.toString()}>{s.sigu_name}</SelectItem>}
+                                {(s) => <SelectItem key={s.sigu_code}>{s.sigu_name}</SelectItem>}
                             </Select>
                         </div>
 

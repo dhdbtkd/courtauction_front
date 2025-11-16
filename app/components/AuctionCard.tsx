@@ -85,13 +85,63 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
         // 예: "서울 강남구 역삼동" (앞 3개 파트)
         return parts.slice(0, 3).join(' ');
     };
+    function extractAddressInfo(text: string | null): string {
+        // 1️⃣ 괄호 안 텍스트가 있는 경우 → 그대로 반환
+        if (!text) return '주소 정보 없음';
+        const bracketMatch = text.match(/\((.*?)\)/);
+        if (bracketMatch) {
+            return bracketMatch[1];
+        }
+
+        // 2️⃣ "○○○아파트", "○○○빌라"가 있는 경우 → 해당 단어만 추출
+        //   (아파트, 빌라 앞뒤로 공백/숫자/문자 포함 가능하도록)
+        const aptPattern = /([가-힣A-Za-z0-9]+(?:아파트|빌라))/;
+        const aptMatch = text.match(aptPattern);
+        if (aptMatch) {
+            return aptMatch[1];
+        }
+
+        // 3️⃣ 기본: 앞 3개 파트 반환
+        const parts = text.trim().split(/\s+/);
+        return parts.slice(0, 3).join(' ');
+    }
 
     return (
         // [수정됨] isPressable과 onClick 속성 제거
         <Card isHoverable className="w-full shadow-md border border-gray-100">
             <CardBody className="p-3">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
                     {/* 1. 이미지 (thumbnail_src로 변경) */}
+                    {/* 상태 및 버튼 */}
+                    <div className="md:col-span-12 flex flex-col items-start md:items-end justify-between h-full">
+                        <div className="flex items-center justify-between w-full">
+                            <div className="text-xs px-1.5 py-1 rounded-full bg-zinc-600 text-white">
+                                {auction.category}
+                            </div>
+                            <div className="flex gap-2 md:mt-0">
+                                <Chip color={getStatusChipColor(auction.status)} variant="flat" size="sm">
+                                    {auction.status || '상태 미정'}
+                                </Chip>
+                                {/* failed_auction_count로 변경 */}
+                                {(auction.failed_auction_count || 0) > 0 && (
+                                    <Chip color="danger" variant="flat" size="sm">
+                                        {auction.failed_auction_count}회 유찰
+                                    </Chip>
+                                )}
+                            </div>
+                            {/* <button
+                                onClick={handleScrapClick}
+                                className="p-2 rounded-full hover:bg-red-50"
+                                aria-label="스크랩"
+                            >
+                                <Heart className="w-6 h-6 text-gray-400 hover:text-red-500" />
+                            </button> */}
+                        </div>
+
+                        {/* <Button color="primary" className="w-full md:w-auto mt-4" onClick={handleDetailClick}>
+                            상세보기
+                        </Button> */}
+                    </div>
                     <div className="md:col-span-2">
                         <img
                             src={auction.thumbnail_src || 'https://via.placeholder.com/300x200?text=No+Image'}
@@ -105,7 +155,7 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
                         <div>
                             {/* address_short 대신 함수로 축약된 주소 표시 */}
                             <h3 className="text-base font-bold text-gray-800 mb-1">
-                                {getShortAddress(auction.address)} {auction.category}
+                                {extractAddressInfo(auction.address)}
                             </h3>
                             <div className="flex items-baseline">
                                 {/* minimum_price로 변경 */}
@@ -128,8 +178,10 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
                                 <Building className="w-4 h-4 text-gray-400" />
                                 {/* area로 변경 */}
                                 <span>
-                                    {auction.area ? `${auction.area}㎡ (${(auction.area / 3.3).toFixed(0)}평)` : ''} ·{' '}
-                                    {auction.category}
+                                    {auction.area
+                                        ? `${auction.area.toFixed(1)}㎡ (전용 ${(auction.area / 3.3).toFixed(0)}평)`
+                                        : ''}{' '}
+                                    · {auction.category}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-600">
@@ -140,34 +192,6 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
                                 )}
                             </div>
                         </div>
-                    </div>
-
-                    {/* 3. 상태 및 버튼 */}
-                    <div className="md:col-span-3 flex flex-col items-start md:items-end justify-between h-full">
-                        <div className="flex items-center">
-                            <div className="flex gap-2 mt-4 md:mt-0">
-                                <Chip color={getStatusChipColor(auction.status)} variant="flat">
-                                    {auction.status || '상태 미정'}
-                                </Chip>
-                                {/* failed_auction_count로 변경 */}
-                                {(auction.failed_auction_count || 0) > 0 && (
-                                    <Chip color="danger" variant="dot">
-                                        {auction.failed_auction_count}회 유찰
-                                    </Chip>
-                                )}
-                            </div>
-                            {/* <button
-                                onClick={handleScrapClick}
-                                className="p-2 rounded-full hover:bg-red-50"
-                                aria-label="스크랩"
-                            >
-                                <Heart className="w-6 h-6 text-gray-400 hover:text-red-500" />
-                            </button> */}
-                        </div>
-
-                        {/* <Button color="primary" className="w-full md:w-auto mt-4" onClick={handleDetailClick}>
-                            상세보기
-                        </Button> */}
                     </div>
                 </div>
             </CardBody>

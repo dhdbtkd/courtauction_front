@@ -13,8 +13,8 @@ export interface Auction {
     status: string | null;
     auction_date: string | null; // or Date | null
     failed_auction_count: number | null; // DB: failed_auction_count
-    sido_code: number | null;
-    sigu_code: number | null;
+    sido_code: string | null;
+    sigu_code: string | null;
     sold_price: number | null;
     sold_date: string | null; // or Date | null
     thumbnail_src: string | null; // DB: thumbnail_src

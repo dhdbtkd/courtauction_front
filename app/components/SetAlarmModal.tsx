@@ -10,7 +10,7 @@ interface ModalProps {
 }
 
 const SetAlarmModal = ({ isOpen, closeModal, regions }: ModalProps) => {
-    const [selectedSidoCode, setSelectedSidoCode] = useState<number | null>(null);
+    const [selectedSidoCode, setSelectedSidoCode] = useState<string | null>(null);
 
     const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -107,7 +107,7 @@ const SetAlarmModal = ({ isOpen, closeModal, regions }: ModalProps) => {
                                     <option>군구</option>
                                     {regions?.sigu
                                         ? regions?.sigu
-                                              .filter((sigu) => sigu['sido_code'] == selectedSidoCode)
+                                              .filter((sigu) => sigu['sido_code'] === selectedSidoCode)
                                               .map((sigu) => {
                                                   return (
                                                       <option key={sigu.sigu_code} value={sigu.sigu_name}>

@@ -20,14 +20,11 @@ export async function GET(req: NextRequest) {
         if (category) query = query.eq('category', category);
         if (status) query = query.eq('status', status);
 
-        const sido_code = parseInt(sidoCodeStr || '', 10);
-        const sigu_code = parseInt(siguCodeStr || '', 10);
-
-        if (sidoCodeStr && !isNaN(sido_code)) {
-            query = query.eq('sido_code', sido_code);
+        if (sidoCodeStr) {
+            query = query.eq('sido_code', sidoCodeStr);
         }
-        if (siguCodeStr && !isNaN(sigu_code)) {
-            query = query.eq('sigu_code', sigu_code);
+        if (siguCodeStr) {
+            query = query.eq('sigu_code', siguCodeStr);
         }
 
         // ✅ [추가됨] 검색어 필터 (address 컬럼 기준)
