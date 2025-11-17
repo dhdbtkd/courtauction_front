@@ -1,5 +1,11 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 @import 'tailwindcss';
 @source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
 @plugin './hero.ts';
 /* Note: You may need to change the path to fit your project structure */
 @custom-variant dark (&:is(.dark *));
+
+html,
+body {
+    font-family: 'Pretendard', sans-serif;
+}

@@ -22,7 +22,7 @@ const Header: React.FC = () => {
                 <div className="w-full max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
                     {/* Left: Logo + Desktop Nav */}
                     <div className="flex items-center gap-8 h-full">
-                        <img src="/logo.png" className="obejct-cover h-full p-3"></img>
+                        <img src="/logo.png" className="obejct-cover h-full p-4"></img>
                         <Link href="/" className="text-2xl font-bold text-blue-600"></Link>
 
                         {/* Desktop Navigation */}
