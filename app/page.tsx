@@ -202,7 +202,7 @@ export default function Home() {
                         {/* --- [수정됨] Select 컴포넌트 --- */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             {/* 1. 카테고리 Select */}
-                            <Select
+                            {/* <Select
                                 placeholder="카테고리 (전체)"
                                 selectedKeys={[filters.category]}
                                 onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}
@@ -210,7 +210,7 @@ export default function Home() {
                                 aria-label="카테고리 선택"
                             >
                                 {(item) => <SelectItem key={item.key}>{item.name}</SelectItem>}
-                            </Select>
+                            </Select> */}
 
                             {/* 2. 상태 Select */}
                             <Select
@@ -297,7 +297,7 @@ export default function Home() {
                         <h2 className="text-xl font-bold text-gray-800">
                             매물 목록 <span className="text-blue-600">({totalCount.toLocaleString()}건)</span>
                         </h2>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 hidden">
                             <Button
                                 variant={viewMode === 'list' ? 'solid' : 'flat'}
                                 color="primary"

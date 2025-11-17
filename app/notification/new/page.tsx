@@ -19,7 +19,10 @@ const propertyTypes = [
 
 // 💰 숫자를 단위별로 표시하는 유틸 (만원→억 단위 변환)
 const formatPrice = (value: number): string => {
-    if (value >= 10000) return `${(value / 10000).toFixed(1)}억`; // 1억 = 10000만원
+    if (value >= 10000) {
+        const num = value / 10000;
+        return Number.isInteger(num) ? `${num}억` : `${num.toFixed(1)}억`;
+    }
     return `${value.toLocaleString()}만원`;
 };
 
@@ -38,10 +41,10 @@ export default function NotificationRulePage() {
     const [selectedSigu, setSelectedSigu] = useState<string | null>(null);
     const [category, setCategory] = useState('전체');
 
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]); // 0만원~20억
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 200000]); // 0만원~20억
     const [areaRange, setAreaRange] = useState<[number, number]>([0, 300]); // 0~300m²
-    const [noPriceLimit, setNoPriceLimit] = useState(false);
-    const [noAreaLimit, setNoAreaLimit] = useState(false);
+    const [noPriceLimit, setNoPriceLimit] = useState(true);
+    const [noAreaLimit, setNoAreaLimit] = useState(true);
 
     const [rules, setRules] = useState<NotificationRule[]>([]);
     const [rulesLoading, setRulesLoading] = useState(true);
@@ -246,13 +249,14 @@ export default function NotificationRulePage() {
                                     size="sm"
                                 />
                                 <Input
-                                    label="키워드 (선택)"
+                                    label="감지할 키워드"
                                     placeholder="예: 래미안, 아크로"
                                     value={keyword}
                                     onChange={(e) => setKeyword(e.target.value)}
                                     size="sm"
                                 />
                                 <Select
+                                    isRequired
                                     label="시/도"
                                     selectedKeys={selectedSido ? new Set([selectedSido]) : new Set()}
                                     onSelectionChange={(keys) => {
@@ -265,6 +269,7 @@ export default function NotificationRulePage() {
                                     {(item) => <SelectItem key={item.sido_code}>{item.sido_name}</SelectItem>}
                                 </Select>
                                 <Select
+                                    isRequired
                                     label="구/군"
                                     size="sm"
                                     selectedKeys={selectedSigu ? new Set([selectedSigu]) : new Set()}
@@ -307,7 +312,7 @@ export default function NotificationRulePage() {
                                 </div>
                                 <Slider
                                     step={1000}
-                                    maxValue={20000}
+                                    maxValue={200000}
                                     value={priceRange}
                                     onChange={(v) => setPriceRange(v as [number, number])}
                                     isDisabled={noPriceLimit}
