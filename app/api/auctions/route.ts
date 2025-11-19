@@ -9,7 +9,11 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get('status');
     const sidoCodeStr = searchParams.get('sido_code');
     const siguCodeStr = searchParams.get('sigu_code');
-    const search = searchParams.get('search'); // ✅ 추가됨
+    const search = searchParams.get('search');
+
+    // 🔥 추가
+    const minPrice = searchParams.get('minPrice');
+    const maxPrice = searchParams.get('maxPrice');
 
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
@@ -20,16 +24,20 @@ export async function GET(req: NextRequest) {
         if (category) query = query.eq('category', category);
         if (status) query = query.eq('status', status);
 
-        if (sidoCodeStr) {
-            query = query.eq('sido_code', sidoCodeStr);
-        }
-        if (siguCodeStr) {
-            query = query.eq('sigu_code', siguCodeStr);
-        }
+        if (sidoCodeStr) query = query.eq('sido_code', sidoCodeStr);
+        if (siguCodeStr) query = query.eq('sigu_code', siguCodeStr);
 
-        // ✅ [추가됨] 검색어 필터 (address 컬럼 기준)
         if (search) {
             query = query.ilike('address', `%${search}%`);
+        }
+
+        // 격 필터 추가
+        if (minPrice) {
+            query = query.gte('minimum_price', Number(minPrice) * 10000);
+        }
+
+        if (maxPrice) {
+            query = query.lte('minimum_price', Number(maxPrice) * 10000);
         }
 
         query = query.order('created_at', { ascending: false }).range((page - 1) * limit, page * limit - 1);

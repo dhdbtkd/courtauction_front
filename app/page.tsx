@@ -64,6 +64,7 @@ export default function Home() {
     const limit = 10; // 페이지 당 매물 수
     const [totalCount, setTotalCount] = useState(0);
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+    const [priceRange, setPriceRange] = useState<[number, number]>([filters.min_price, filters.max_price]);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -159,6 +160,23 @@ export default function Home() {
 
         return `${value}만원`;
     }
+    const handlePriceChange = (val: number | number[]) => {
+        if (Array.isArray(val)) {
+            setPriceRange([val[0], val[1]]);
+        }
+    };
+    // 🔥 200ms 디바운스 후 필터에 적용 (API 호출 O)
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setFilters((f) => ({
+                ...f,
+                min_price: priceRange[0],
+                max_price: priceRange[1],
+            }));
+        }, 200);
+
+        return () => clearTimeout(handler);
+    }, [priceRange]);
 
     if (error) {
         return (
@@ -269,16 +287,8 @@ export default function Home() {
                                     minValue={MIN_PRICE}
                                     maxValue={MAX_PRICE}
                                     step={1000}
-                                    value={[filters.min_price, filters.max_price]}
-                                    onChange={(val) => {
-                                        if (Array.isArray(val)) {
-                                            setFilters((f) => ({
-                                                ...f,
-                                                min_price: Number(val[0]),
-                                                max_price: Number(val[1]),
-                                            }));
-                                        }
-                                    }}
+                                    value={priceRange}
+                                    onChange={handlePriceChange}
                                     className="w-full"
                                     size="sm"
                                     color="primary"
