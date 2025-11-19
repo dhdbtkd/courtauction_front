@@ -41,13 +41,13 @@ const LoginPage = () => {
                         <FcGoogle className="mr-3" />
                         구글 로그인
                     </div>
-                    <div
+                    {/* <div
                         className="flex items-center justify-center mx-auto px-2 py-3 my-4 bg-[#03c75A] text-white duration-300 rounded-lg shadow hover:bg-[rgb(39,156,92)] text-sm cursor-pointer w-full md:w-80 overflow-hidden h-12"
                         onClick={() => signIn('naver')}
                     >
                         <SiNaver className="mr-3" />
                         네이버 로그인
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
