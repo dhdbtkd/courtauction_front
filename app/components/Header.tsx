@@ -64,9 +64,9 @@ const Header: React.FC = () => {
                                         </Button>
                                     </>
                                 ) : (
-                                    <Button color="primary" variant="light" size="sm" onPress={() => signIn()}>
+                                    <div className="text-sm mr-5 cursor-pointer p-4" onClick={() => signIn()}>
                                         로그인 & 회원가입
-                                    </Button>
+                                    </div>
                                 )}
                             </>
                         )}

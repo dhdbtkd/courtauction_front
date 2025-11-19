@@ -27,21 +27,22 @@ const Button = styled.button`
 `;
 const LoginPage = () => {
     return (
-        <div className="flex justify-center items-center flex-col p-20">
-            <Header>ZoopZoop</Header>
+        <div className="flex justify-center items-center flex-col p-10 lg:p-20">
+            {/* <Header>ZoopZoop</Header> */}
+            <img className="max-lg:w-40 w-52" src="/logo.png" />
             <div className="text-sm my-5">서비스를 이용하기 위해 로그인해주세요</div>
-            <div className="bg-zinc-100 p-10 rounded-xl shadow-lg">
+            <div className="bg-zinc-100 p-5 md:p-10 rounded-xl shadow-lg max-md:w-full w-auto">
                 <div className="text-xs text-center">간편 로그인</div>
                 <div className="flex flex-col">
                     <div
-                        className="flex items-center justify-center mx-auto px-2 py-3 my-4 bg-white rounded-lg shadow hover:bg-gray-100 text-sm cursor-pointer w-80 overflow-hidden h-12"
+                        className="flex items-center justify-center mx-auto px-2 py-3 my-4 bg-white rounded-lg shadow hover:bg-gray-100 text-sm cursor-pointer w-full md:w-80 overflow-hidden h-12"
                         onClick={() => signIn('google')}
                     >
                         <FcGoogle className="mr-3" />
                         구글 로그인
                     </div>
                     <div
-                        className="flex items-center justify-center mx-auto px-2 py-3 my-4 bg-[#03c75A] text-white duration-300 rounded-lg shadow hover:bg-[rgb(39,156,92)] text-sm cursor-pointer w-80 overflow-hidden h-12"
+                        className="flex items-center justify-center mx-auto px-2 py-3 my-4 bg-[#03c75A] text-white duration-300 rounded-lg shadow hover:bg-[rgb(39,156,92)] text-sm cursor-pointer w-full md:w-80 overflow-hidden h-12"
                         onClick={() => signIn('naver')}
                     >
                         <SiNaver className="mr-3" />
