@@ -186,9 +186,11 @@ export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
                             </div>
                             <div className="flex items-center gap-2 text-gray-600">
                                 <Calendar className="w-4 h-4 text-gray-400" />
-                                <span>경매일: {formatDate(auction.auction_date)}</span>
+                                <span>입찰일: {formatDate(auction.auction_date)}</span>
                                 {auction.auction_date && (
-                                    <span className="text-xs text-gray-500">({daysUntil(auction.auction_date)})</span>
+                                    <span className="text-xs text-zinc-600 font-semibold">
+                                        ({daysUntil(auction.auction_date)})
+                                    </span>
                                 )}
                             </div>
                         </div>
