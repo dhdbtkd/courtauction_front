@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description: 'ZoopZoop - 줍줍',
     openGraph: {
         title: 'ZoopZoop - 줍줍',
-        description: '사ZoopZoop - 줍줍',
+        description: '내 집을 ZoopZoop !',
         url: 'https://courtauction-front.vercel.app',
         images: [
             {
