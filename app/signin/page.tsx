@@ -28,7 +28,7 @@ const Button = styled.button`
 const LoginPage = () => {
     return (
         <div className="flex justify-center items-center flex-col p-20">
-            <Header>법원 경매 모니터링</Header>
+            <Header>ZoopZoop</Header>
             <div className="text-sm my-5">서비스를 이용하기 위해 로그인해주세요</div>
             <div className="bg-zinc-100 p-10 rounded-xl shadow-lg">
                 <div className="text-xs text-center">간편 로그인</div>

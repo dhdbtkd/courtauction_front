@@ -15,8 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: '법원 경매',
-    description: '법원 경매',
+    title: 'ZoopZoop - 줍줍',
+    description: 'ZoopZoop - 줍줍',
+    openGraph: {
+        title: 'ZoopZoop - 줍줍',
+        description: '사ZoopZoop - 줍줍',
+        url: 'https://courtauction-front.vercel.app',
+        images: [
+            {
+                url: 'https://courtauction-front.vercel.app/og_image.png',
+                width: 1200,
+                height: 630,
+                alt: '대표 이미지',
+            },
+        ],
+    },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

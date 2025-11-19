@@ -21,5 +21,7 @@ export async function proxy(request: NextRequest) {
 
 // 여기서 signin을 제외하면 안됨!!! → 제외하면 middleware가 signin 페이지를 못봄.
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|api/auth).*)'],
+    matcher: [
+        '/((?!api/auth|_next/static|_next/image|favicon.ico|images|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg).*)',
+    ],
 };
