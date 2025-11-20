@@ -53,6 +53,7 @@ const Header: React.FC = () => {
                                         >
                                             <User className="w-4 h-4" />
                                             {session.user?.name || '마이페이지'}
+                                            {session.user?.nickname && <span>({session.user?.nickname})</span>}
                                         </Link>
                                         <Button
                                             color="secondary"

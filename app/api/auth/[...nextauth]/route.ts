@@ -23,47 +23,82 @@ export const authOptions: NextAuthOptions = {
         // ------------------------
         // 🔥 2. signIn 타입 오류 해결
         // ------------------------
-        async signIn({ user, account }) {
-            if (account && user.email) {
-                const supabase = createClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.SUPABASE_SERVICE_ROLE_KEY!
-                );
+        async signIn({ user, account, profile }) {
+            if (!account) return true;
 
-                const userData = {
-                    email: user.email,
-                    name: user.name,
-                    provider_name: account.provider,
-                    provider_id: account.providerAccountId,
-                    updated_at: new Date().toISOString(),
-                };
+            const supabase = createClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                process.env.SUPABASE_SERVICE_ROLE_KEY!
+            );
 
-                const { data, error } = await supabase
-                    .from('users')
-                    .upsert(userData, { onConflict: 'email' })
-                    .select('id')
-                    .single();
+            const isNaver = account.provider === 'naver';
+            const isGoogle = account.provider === 'google';
 
-                if (error) {
-                    console.error('Supabase upsert error:', error.message);
-                    return false;
-                }
+            // -----------------------------
+            // 🔥 NAME
+            // -----------------------------
+            const name = isNaver ? (profile as any)?.response?.name : user.name || (profile as any)?.name;
 
-                // UUID 저장 — user.id 타입 보완 필요
-                if (data?.id) {
-                    (user as any).id = data.id;
-                }
+            // -----------------------------
+            // 🔥 NICKNAME
+            // -----------------------------
+            const nickname = isNaver ? (profile as any)?.response?.nickname : user.name || null;
+
+            // -----------------------------
+            // 🔥 EMAIL
+            // -----------------------------
+            const email =
+                user.email ??
+                (profile as any)?.email ??
+                `${account.provider}-${account.providerAccountId}@noemail.oauth`;
+
+            const userData = {
+                email,
+                name,
+                nickname,
+                provider_name: account.provider,
+                provider_id: account.providerAccountId,
+                updated_at: new Date().toISOString(),
+            };
+
+            console.log('🟡 userData:', userData);
+
+            const { data, error } = await supabase
+                .from('users')
+                .upsert(userData, {
+                    onConflict: 'provider_name,provider_id',
+                })
+                .select('id')
+                .single();
+
+            if (error) {
+                console.error('Supabase upsert error:', error.message);
+                return false;
             }
+
+            if (data?.id) {
+                (user as any).id = data.id;
+            }
+
             return true;
         },
 
         // ------------------------
         // 🔥 3. JWT Callback 타입 오류 해결
         // ------------------------
-        async jwt({ token, user }) {
-            if (user && (user as any).id) {
+        async jwt({ token, user, account, profile }) {
+            if (user) {
                 token.id = (user as any).id;
+
+                const isNaver = account?.provider === 'naver';
+
+                token.name = isNaver ? (profile as any)?.response?.name : user.name;
+
+                token.nickname = isNaver ? (profile as any)?.response?.nickname : null;
+
+                token.provider = account?.provider;
             }
+
             return token;
         },
 
@@ -71,9 +106,13 @@ export const authOptions: NextAuthOptions = {
         // 🔥 4. Session Callback 타입 오류 해결
         // ------------------------
         async session({ session, token }) {
-            if (session.user && token.id) {
-                (session.user as any).id = token.id as string;
-            }
+            session.user.id = token.id as string;
+
+            // name / nickname / provider 도 session.user 에 포함
+            session.user.name = token.name as string;
+            session.user.nickname = token.nickname as string;
+            session.user.provider = token.provider as string;
+
             return session;
         },
     },
