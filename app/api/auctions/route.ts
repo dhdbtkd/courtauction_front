@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
     // 🔥 추가
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
+    const minArea = searchParams.get('minArea');
+    const maxArea = searchParams.get('maxArea');
 
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
@@ -25,7 +27,7 @@ export async function GET(req: NextRequest) {
         if (status) query = query.eq('status', status);
 
         if (sidoCodeStr) query = query.eq('sido_code', sidoCodeStr);
-        if (siguCodeStr) query = query.eq('sigu_code', siguCodeStr);
+        if (siguCodeStr) query = query.eq('sigu_code', siguCodeStr.slice(2));
 
         if (search) {
             query = query.ilike('address', `%${search}%`);
@@ -39,6 +41,8 @@ export async function GET(req: NextRequest) {
         if (maxPrice) {
             query = query.lte('minimum_price', Number(maxPrice) * 10000);
         }
+        if (minArea) query.gte('area', minArea);
+        if (maxArea) query.lte('area', maxArea);
 
         query = query.order('created_at', { ascending: false }).range((page - 1) * limit, page * limit - 1);
 

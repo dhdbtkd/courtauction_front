@@ -1,202 +1,129 @@
 'use client';
-import React from 'react';
-import { Auction } from '../types/Auction';
-import { Card, CardBody, Button, Chip } from '@heroui/react';
-import { MapPin, Building, Calendar, Heart } from 'lucide-react';
+
+import Image from 'next/image';
+import { CalendarDays, MapPin, Building } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Chip } from '@heroui/react';
 
-// 가격 포맷팅 함수
-const formatPrice = (price: number | null | undefined): string => {
-    if (price === null || price === undefined) return '가격 정보 없음';
-
-    const 억 = Math.floor(price / 100000000);
-    const 만 = Math.floor((price % 100000000) / 10000);
-
-    if (억 > 0 && 만 > 0) {
-        return `${억}억 ${만.toLocaleString()}만원`;
-    } else if (억 > 0) {
-        return `${억}억`;
-    } else if (만 > 0) {
-        return `${만.toLocaleString()}만원`;
-    }
-    return `${price.toLocaleString()}원`;
+type AuctionMatchCardProps = {
+    auction: any; // notifications_log에서 받은 auction:auction_id(*) 결과
 };
 
-// 날짜 포맷팅 함수
-const formatDate = (dateString: string | null | undefined): string => {
-    if (!dateString) return '날짜 미정';
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('ko-KR');
-    } catch (e) {
-        return dateString;
-    }
-};
-
-interface AuctionCardProps {
-    auction: Auction;
-}
-function daysUntil(dateStr: string) {
-    if (!dateStr) return '';
-    const today = new Date();
-    const target = new Date(dateStr);
-
-    // 시간 차이(밀리초)
-    const diff = target.getTime() - today.getTime();
-
-    // 일수로 변환
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-    if (days > 0) return `D-${days}`;
-    if (days === 0) return `오늘`;
-    return `${Math.abs(days)}일 지남`;
-}
-
-export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
+export default function AuctionCard({ auction }: AuctionMatchCardProps) {
     const router = useRouter();
 
-    const handleDetailClick = () => {
-        router.push(`/auction/${auction.id}`);
+    if (!auction) return null;
+
+    const formatPrice = (price: number | null | undefined): string => {
+        if (!price) return '가격 정보 없음';
+
+        const 억 = Math.floor(price / 100000000);
+        const 만 = Math.floor((price % 100000000) / 10000);
+
+        if (억 && 만) return `${억}억 ${만}만원`;
+        if (억) return `${억}억`;
+        if (만) return `${만}만원`;
+        return `${price.toLocaleString()}원`;
     };
 
-    const handleScrapClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        console.log('Scrap clicked for:', auction.id);
-        alert('스크랩 기능은 준비 중입니다.');
+    const formatDate = (date: string | null | undefined) => {
+        if (!date) return '날짜 정보 없음';
+        return new Date(date).toLocaleDateString('ko-KR');
     };
 
-    const getStatusChipColor = (status: string | null) => {
-        switch (status) {
-            case '신건':
-                return 'success';
-            case '유찰':
-                return 'warning';
-            case '매각':
-                return 'secondary';
-            default:
-                return 'default';
-        }
+    const daysUntil = (dateStr: string) => {
+        if (!dateStr) return '';
+        const today = new Date();
+        const target = new Date(dateStr);
+        const diff = target.getTime() - today.getTime();
+        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+        if (days > 0) return `D-${days}`;
+        if (days === 0) return 'D-Day';
+        return `D+${Math.abs(days)}`;
     };
 
-    // 주소 축약 (DB에 address_short가 없으므로 address에서 생성)
-    const getShortAddress = (fullAddress: string | null): string => {
-        if (!fullAddress) return '주소 정보 없음';
-        const parts = fullAddress.split(' ');
-        // 예: "서울 강남구 역삼동" (앞 3개 파트)
+    const extractTitle = (address: string | null) => {
+        if (!address) return '주소 정보 없음';
+
+        // 괄호 안 빌딩명 우선
+        const bracket = address.match(/\((.*?)\)/);
+        if (bracket) return bracket[1];
+
+        // "○○아파트", "○○빌라" 형태 추출
+        const apt = address.match(/([가-힣A-Za-z0-9]+(?:아파트|빌라))/);
+        if (apt) return apt[1];
+
+        // 기본: 앞 2~3단어 추출
+        const parts = address.split(' ');
         return parts.slice(0, 3).join(' ');
     };
-    function extractAddressInfo(text: string | null): string {
-        // 1️⃣ 괄호 안 텍스트가 있는 경우 → 그대로 반환
-        if (!text) return '주소 정보 없음';
-        const bracketMatch = text.match(/\((.*?)\)/);
-        if (bracketMatch) {
-            return bracketMatch[1];
-        }
-
-        // 2️⃣ "○○○아파트", "○○○빌라"가 있는 경우 → 해당 단어만 추출
-        //   (아파트, 빌라 앞뒤로 공백/숫자/문자 포함 가능하도록)
-        const aptPattern = /([가-힣A-Za-z0-9]+(?:아파트|빌라))/;
-        const aptMatch = text.match(aptPattern);
-        if (aptMatch) {
-            return aptMatch[1];
-        }
-
-        // 3️⃣ 기본: 앞 3개 파트 반환
-        const parts = text.trim().split(/\s+/);
-        return parts.slice(0, 3).join(' ');
-    }
 
     return (
-        // [수정됨] isPressable과 onClick 속성 제거
-        <Card isHoverable className="w-full shadow-md border border-gray-100">
-            <CardBody className="p-3">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
-                    {/* 1. 이미지 (thumbnail_src로 변경) */}
-                    {/* 상태 및 버튼 */}
-                    <div className="md:col-span-12 flex flex-col items-start md:items-end justify-between h-full">
-                        <div className="flex items-center justify-between w-full">
-                            <div className="text-xs px-1.5 py-1 rounded-full bg-zinc-600 text-white">
-                                {auction.category}
-                            </div>
-                            <div className="flex gap-2 md:mt-0">
-                                <Chip color={getStatusChipColor(auction.status)} variant="flat" size="sm">
-                                    {auction.status || '상태 미정'}
-                                </Chip>
-                                {/* failed_auction_count로 변경 */}
-                                {(auction.failed_auction_count || 0) > 0 && (
-                                    <Chip color="danger" variant="flat" size="sm">
-                                        {auction.failed_auction_count}회 유찰
-                                    </Chip>
-                                )}
-                            </div>
-                            {/* <button
-                                onClick={handleScrapClick}
-                                className="p-2 rounded-full hover:bg-red-50"
-                                aria-label="스크랩"
-                            >
-                                <Heart className="w-6 h-6 text-gray-400 hover:text-red-500" />
-                            </button> */}
-                        </div>
+        <div className="shadow-sm rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition">
+            {/* Top Thumbnail Section */}
+            <div className="relative w-full h-48">
+                <Image
+                    src={auction.thumbnail_src || '/placeholder.jpg'}
+                    alt="thumbnail"
+                    fill
+                    className="object-cover"
+                />
 
-                        {/* <Button color="primary" className="w-full md:w-auto mt-4" onClick={handleDetailClick}>
-                            상세보기
-                        </Button> */}
-                    </div>
-                    <div className="md:col-span-2">
-                        <img
-                            src={auction.thumbnail_src || 'https://via.placeholder.com/300x200?text=No+Image'}
-                            alt={auction.address || '경매 매물'}
-                            className="rounded-lg object-cover w-full aspect-video"
-                        />
-                    </div>
-
-                    {/* 2. 매물 정보 */}
-                    <div className="md:col-span-7 flex flex-col justify-between h-full">
-                        <div>
-                            {/* address_short 대신 함수로 축약된 주소 표시 */}
-                            <h3 className="text-base font-bold text-gray-800 mb-1">
-                                {extractAddressInfo(auction.address)}
-                            </h3>
-                            <div className="flex items-baseline">
-                                {/* minimum_price로 변경 */}
-                                <p className="text-lg font-extrabold text-blue-600 mr-2">
-                                    {formatPrice(auction.minimum_price)}
-                                </p>
-                                {/* estimated_price로 변경 */}
-                                <p className="text-[0.7rem] text-gray-500 mt-1">
-                                    감정가 {formatPrice(auction.estimated_price)}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5 mt-3 text-xs">
-                            <div className="flex items-center gap-2 text-gray-600">
-                                <MapPin className="w-4 h-4 text-gray-400" />
-                                <span>{auction.address}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-600">
-                                <Building className="w-4 h-4 text-gray-400" />
-                                {/* area로 변경 */}
-                                <span>
-                                    {auction.area
-                                        ? `${auction.area.toFixed(1)}㎡ (전용 ${(auction.area / 3.3).toFixed(0)}평)`
-                                        : ''}{' '}
-                                    · {auction.category}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-600">
-                                <Calendar className="w-4 h-4 text-gray-400" />
-                                <span>입찰일: {formatDate(auction.auction_date)}</span>
-                                {auction.auction_date && (
-                                    <span className="text-xs text-zinc-600 font-semibold">
-                                        ({daysUntil(auction.auction_date)})
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                {/* D-Day Badge */}
+                <div className="absolute top-2 right-2">
+                    <span className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full font-semibold shadow">
+                        {daysUntil(auction.auction_date)}
+                    </span>
                 </div>
-            </CardBody>
-        </Card>
+            </div>
+
+            {/* Content Section */}
+            <div className="p-4 space-y-2">
+                {/* Title */}
+                <h3 className="text-base font-semibold text-gray-900">
+                    {auction.buld_nm ? auction.buld_nm : extractTitle(auction.address)}
+                </h3>
+
+                {/* Minimum Price */}
+                <div className="text-lg font-bold text-blue-600">
+                    <span className="text-sm mr-1">최저</span>
+                    {formatPrice(auction.minimum_price)}
+                </div>
+
+                {/* Estimated Price */}
+                <p className="text-xs text-gray-500">감정가 {formatPrice(auction.estimated_price)}</p>
+
+                {/* Full Address */}
+                <div className="text-xs text-gray-700 mt-1 line-clamp-2">{auction.address}</div>
+
+                {/* Area */}
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Building size={16} className="text-gray-400" />
+                    {auction.area
+                        ? `${auction.area.toFixed(1)}㎡ (전용 ${(auction.area / 3.3).toFixed(0)}평)`
+                        : '면적 정보 없음'}
+                    · {auction.category || '유형 없음'}
+                </div>
+
+                {/* Auction Date */}
+                <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <CalendarDays size={16} className="text-gray-400" />
+                    입찰일: {formatDate(auction.auction_date)}
+                </div>
+
+                {/* Status */}
+                <div className="pt-1">
+                    <Chip color="primary" variant="flat" size="sm">
+                        {auction.status || '상태 미정'}
+                    </Chip>
+
+                    {auction.failed_auction_count > 0 && (
+                        <Chip color="danger" size="sm" variant="flat" className="ml-2">
+                            {auction.failed_auction_count}회 유찰
+                        </Chip>
+                    )}
+                </div>
+            </div>
+        </div>
     );
-};
+}

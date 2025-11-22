@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Auction } from '@/types/Auction';
-import { AuctionCard } from '@/components/AuctionCard';
-import { Select, SelectItem, Card, CardBody, Pagination, Input, Button, Slider } from '@heroui/react';
+import AuctionCard from '@/components/AuctionCard';
+import AuctionCardSkeleton from '@/components/AuctionCardSkeleton';
+import { Select, SelectItem, Card, CardBody, Checkbox, Pagination, Input, Button, Slider } from '@heroui/react';
 import Header from '@/components/Header';
-import { MapPin, List, Banknote, Search } from 'lucide-react';
+import { MapPin, List, Banknote, Search, LandPlot } from 'lucide-react';
 
 // 지역 인터페이스 정의
 interface Sido {
@@ -26,7 +27,10 @@ export interface Regions {
 
 // 가격대 상수 (단위: 만 원)
 const MIN_PRICE = 0;
-const MAX_PRICE = 100000; // 10억
+const MAX_PRICE = 200000; // 10억
+
+const MIN_AREA = 0;
+const MAX_AREA = 300;
 
 // [수정됨] "전체" 옵션을 포함한 정적 데이터
 const categories = [
@@ -46,8 +50,13 @@ const statuses = [
 const statusesWithAll = [{ key: '', name: '전체' }, ...statuses];
 
 export default function Home() {
+    const [loading, setLoading] = useState(true);
     const [auctions, setAuctions] = useState<Auction[]>([]);
     const [regions, setRegions] = useState<Regions | null>(null);
+    const [areaRange, setAreaRange] = useState<[number, number]>([MIN_AREA, MAX_AREA]);
+    const [noAreaLimit, setNoAreaLimit] = useState(true);
+    const [noPriceLimit, setNoPriceLimit] = useState(true);
+
     const [error, setError] = useState<string | null>(null);
     const [searchTermInput, setSearchTermInput] = useState('');
     const [filters, setFilters] = useState({
@@ -57,6 +66,8 @@ export default function Home() {
         sigu_code: '',
         min_price: MIN_PRICE,
         max_price: MAX_PRICE,
+        min_area: MIN_AREA,
+        max_area: MAX_AREA,
         searchTerm: '',
     });
 
@@ -74,10 +85,10 @@ export default function Home() {
         return () => clearTimeout(handler);
     }, [searchTermInput]);
 
-    // ... (fetchAuctions, fetchRegions, useEffect 등은 변경 없음) ...
     // 매물 조회 API 호출
     const fetchAuctions = async () => {
         try {
+            setLoading(true);
             const params = new URLSearchParams();
 
             // 필터 파라미터 추가
@@ -87,11 +98,18 @@ export default function Home() {
             if (filters.sigu_code) params.append('sigu_code', filters.sigu_code);
             if (filters.searchTerm) params.append('search', filters.searchTerm);
 
-            if (filters.min_price > MIN_PRICE) {
+            if (!noPriceLimit && filters.min_price > MIN_PRICE) {
                 params.append('minPrice', filters.min_price.toString());
             }
-            if (filters.max_price < MAX_PRICE) {
+            if (!noPriceLimit && filters.max_price < MAX_PRICE) {
                 params.append('maxPrice', filters.max_price.toString());
+            }
+
+            if (!noAreaLimit && filters.min_area > MIN_AREA) {
+                params.append('minArea', filters.min_area.toString());
+            }
+            if (!noAreaLimit && filters.max_area < MAX_AREA) {
+                params.append('maxArea', filters.max_area.toString());
             }
 
             params.append('page', page.toString());
@@ -108,6 +126,8 @@ export default function Home() {
             setTotalCount(data.total || 0);
         } catch (err: any) {
             setError(err.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -117,6 +137,7 @@ export default function Home() {
             const [sidosRes, sigusRes] = await Promise.all([fetch('/api/category/sido'), fetch('/api/category/sigu')]);
 
             const [sidos, sigus] = await Promise.all([sidosRes.json(), sigusRes.json()]);
+            console.log('🚀 ~ fetchRegions ~ sigus:', sigus);
 
             // sigu_code는 이미 text 포맷이므로 정규화 불필요
             setRegions({ sido: sidos, sigu: sigus });
@@ -135,6 +156,8 @@ export default function Home() {
         filters.sigu_code,
         filters.min_price,
         filters.max_price,
+        filters.min_area,
+        filters.max_area,
         filters.searchTerm,
     ]);
 
@@ -147,6 +170,29 @@ export default function Home() {
     useEffect(() => {
         fetchRegions();
     }, []);
+
+    const handleNoPriceLimitChange = (checked: boolean) => {
+        setNoPriceLimit(checked);
+
+        if (checked) {
+            setFilters((f) => ({
+                ...f,
+                min_price: MIN_PRICE,
+                max_price: MAX_PRICE,
+            }));
+        }
+    };
+    const handleNoAreaLimitChange = (checked: boolean) => {
+        setNoAreaLimit(checked);
+
+        if (checked) {
+            setFilters((f) => ({
+                ...f,
+                min_area: MIN_AREA,
+                max_area: MAX_AREA,
+            }));
+        }
+    };
 
     function formatManwon(value: number) {
         if (!value) return '0원';
@@ -165,18 +211,33 @@ export default function Home() {
             setPriceRange([val[0], val[1]]);
         }
     };
-    // 🔥 200ms 디바운스 후 필터에 적용 (API 호출 O)
     useEffect(() => {
+        if (noAreaLimit) return;
+
+        const handler = setTimeout(() => {
+            setFilters((f) => ({
+                ...f,
+                min_area: areaRange[0],
+                max_area: areaRange[1],
+            }));
+        }, 300);
+
+        return () => clearTimeout(handler);
+    }, [areaRange, noAreaLimit]);
+
+    useEffect(() => {
+        if (noPriceLimit) return;
+
         const handler = setTimeout(() => {
             setFilters((f) => ({
                 ...f,
                 min_price: priceRange[0],
                 max_price: priceRange[1],
             }));
-        }, 200);
+        }, 300);
 
         return () => clearTimeout(handler);
-    }, [priceRange]);
+    }, [priceRange, noPriceLimit]);
 
     if (error) {
         return (
@@ -201,10 +262,10 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-10">
-            <main className="w-full max-w-6xl mx-auto px-4 mt-8">
-                <Card className="shadow-lg border border-gray-100">
-                    <CardBody className="p-6">
-                        <div className="mb-5">
+            <main className="w-full max-w-6xl mx-auto px-2 md:px-4 mt-4 md:mt-8">
+                <Card className="shadow-lg border border-gray-100 ">
+                    <CardBody className="p-3 md:p-6 overflow-hidden">
+                        <div className="mb-2 md:mb-5">
                             <Input
                                 type="text"
                                 placeholder="지역명, 아파트명으로 검색하세요"
@@ -272,31 +333,93 @@ export default function Home() {
                             </Select>
                         </div>
 
-                        {/* 가격대 슬라이더 (변경 없음) */}
+                        {/* 가격대 슬라이더 */}
                         <div className="mt-6">
-                            <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                <Banknote className="w-4 h-4 mr-2 text-gray-500" />
-                                가격대 (만 원)
-                            </label>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-600 w-32 text-right">
-                                    {formatManwon(filters.min_price)}
-                                </span>
-                                <Slider
-                                    aria-label="가격대 (만 원)"
-                                    minValue={MIN_PRICE}
-                                    maxValue={MAX_PRICE}
-                                    step={1000}
-                                    value={priceRange}
-                                    onChange={handlePriceChange}
-                                    className="w-full"
-                                    size="sm"
+                            <div className="flex justify-between mb-2">
+                                <label className="text-sm font-semibold text-gray-700 flex items-center">
+                                    <Banknote className="w-4 h-4 mr-2 text-gray-500" />
+                                    가격대 (만 원)
+                                </label>
+
+                                <Checkbox
+                                    isSelected={noPriceLimit}
+                                    onChange={(e) => handleNoPriceLimitChange(e.target.checked)}
                                     color="primary"
-                                />
-                                <span className="text-sm text-gray-600 w-32 text-left">
-                                    {filters.max_price === MAX_PRICE ? '10억+' : formatManwon(filters.max_price)}
-                                </span>
+                                    size="sm"
+                                >
+                                    제한 없음
+                                </Checkbox>
                             </div>
+
+                            {!noPriceLimit && (
+                                <div className="flex items-center gap-4">
+                                    {/* ❗ 슬라이더 현재 위치 반영 */}
+                                    <span className="text-sm text-gray-600 w-32 text-right">
+                                        {formatManwon(priceRange[0])}
+                                    </span>
+
+                                    <Slider
+                                        aria-label="가격대 (만 원)"
+                                        minValue={MIN_PRICE}
+                                        maxValue={MAX_PRICE}
+                                        step={1000}
+                                        value={priceRange}
+                                        onChange={(val) => {
+                                            if (Array.isArray(val)) setPriceRange(val as [number, number]);
+                                        }}
+                                        className="w-full"
+                                        size="sm"
+                                        color="primary"
+                                    />
+
+                                    {/* ❗ 슬라이더 현재 위치 반영 */}
+                                    <span className="text-sm text-gray-600 w-32 text-left">
+                                        {priceRange[1] === MAX_PRICE ? '20억+' : formatManwon(priceRange[1])}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 면적 슬라이더 */}
+                        {/* 면적 필터 */}
+                        <div className="mt-6">
+                            <div className="flex justify-between mb-2">
+                                <label className="flex items-center text-sm text-gray-700">
+                                    <LandPlot className="w-4 h-4 mr-2 text-gray-500" />
+                                    면적 (㎡)
+                                </label>
+
+                                <Checkbox
+                                    isSelected={noAreaLimit}
+                                    onChange={(e) => handleNoAreaLimitChange(e.target.checked)}
+                                    color="primary"
+                                    size="sm"
+                                >
+                                    제한 없음
+                                </Checkbox>
+                            </div>
+
+                            {!noAreaLimit && (
+                                <>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm text-gray-600 w-32 text-right">{areaRange[0]}㎡</span>
+
+                                        <Slider
+                                            aria-label="면적대 (㎡)"
+                                            minValue={MIN_AREA}
+                                            maxValue={MAX_AREA}
+                                            step={1}
+                                            value={areaRange}
+                                            onChange={(v) => setAreaRange(v as [number, number])}
+                                            className="w-full"
+                                            size="sm"
+                                            color="primary"
+                                        />
+
+                                        <span className="text-sm text-gray-600 w-32 text-left">{areaRange[1]}㎡</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </CardBody>
                 </Card>
@@ -330,10 +453,19 @@ export default function Home() {
                     </div>
 
                     {viewMode === 'list' ? (
-                        <div className="grid grid-cols-1 gap-5">
-                            {auctions.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            {loading ? (
+                                // 🔥 로딩 중 → 스켈레톤 6개 표시
+                                <>
+                                    {Array.from({ length: 6 }).map((_, idx) => (
+                                        <AuctionCardSkeleton key={idx} />
+                                    ))}
+                                </>
+                            ) : auctions.length > 0 ? (
+                                // 🔥 로딩 끝 + 데이터 존재
                                 auctions.map((a) => <AuctionCard key={a.id} auction={a} />)
                             ) : (
+                                // 🔥 로딩 끝 + 데이터 없음
                                 <div className="text-center py-20 text-gray-500 bg-white rounded-lg shadow-sm">
                                     검색 조건에 맞는 매물이 없습니다.
                                 </div>

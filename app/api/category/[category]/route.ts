@@ -21,9 +21,14 @@ interface CategoryData {
 }
 
 async function getDataFromSupabase(table: string) {
-    const { data, error } = await supabase.from(table).select('*').order('id', { ascending: true });
+    const { data, error } = await supabase.from(table).select('*');
 
     if (error) throw error;
+
+    // ✨ sigu만 한글 가나다순 정렬 적용
+    if (table === 'sigu_code' || table === 'sigu') {
+        return data.sort((a, b) => a.sigu_name.localeCompare(b.sigu_name, 'ko-KR'));
+    }
 
     return data;
 }

@@ -22,13 +22,14 @@ const Header: React.FC = () => {
                 <div className="w-full max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
                     {/* Left: Logo + Desktop Nav */}
                     <div className="flex items-center gap-8 h-full">
-                        <img src="/logo.png" className="obejct-cover h-full p-4"></img>
-                        <Link href="/" className="text-2xl font-bold text-blue-600"></Link>
+                        <Link href="/" className="text-2xl font-bold text-blue-600 h-full">
+                            <img src="/logo.png" className="obejct-cover h-full p-4"></img>
+                        </Link>
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6">
                             <Link href="/" className="text-base font-semibold text-gray-700 hover:text-blue-600">
-                                매물 검색
+                                매물 목록
                             </Link>
                             <Link
                                 href="/notification/new"
@@ -106,32 +107,31 @@ const Header: React.FC = () => {
                             {/* Menu Links */}
                             <nav className="flex flex-col gap-4 text-lg font-medium text-gray-700">
                                 <Link href="/" onClick={() => setIsOpen(false)}>
-                                    매물 검색
+                                    매물 목록
                                 </Link>
                                 <Link href="/notification/new" onClick={() => setIsOpen(false)}>
                                     알림 설정
                                 </Link>
+                            </nav>
 
+                            {/* Divider */}
+                            <div className="border-t border-zinc-200 my-6" />
+
+                            {/* Login / Logout */}
+                            <div>
                                 {isLoggedIn && (
                                     <Link
                                         href="/mypage"
                                         onClick={() => setIsOpen(false)}
-                                        className="flex items-center gap-2"
+                                        className="flex items-center gap-2 mb-4"
                                     >
                                         <User className="w-4 h-4" />
-                                        {session.user?.name || '마이페이지'}
+                                        안녕하세요. {session.user?.name || '마이페이지'}님 😃
                                     </Link>
                                 )}
-                            </nav>
-
-                            {/* Divider */}
-                            <div className="border-t my-6" />
-
-                            {/* Login / Logout */}
-                            <div>
                                 {isLoggedIn ? (
                                     <Button
-                                        color="secondary"
+                                        color="primary"
                                         fullWidth
                                         onPress={() => {
                                             setIsOpen(false);

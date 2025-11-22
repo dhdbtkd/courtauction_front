@@ -23,9 +23,12 @@ export type NotificationRule = {
     sigu_code: string;
     price_min: number | null;
     price_max: number | null;
+    area_min: number | null;
+    area_max: number | null;
     keyword: string | null;
     enabled: boolean;
     created_at: string;
+    match_item_count?: number;
 };
 
 export type NotificationChannel = {

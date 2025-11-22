@@ -76,3 +76,46 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await context.params;
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const body = await req.json();
+        const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+        const { error, data } = await supabase
+            .from('notification_rules')
+            .update({
+                name: body.name,
+                category: body.category,
+                sido_code: body.sido_code,
+                sigu_code: body.sigu_code,
+                price_min: body.price_min,
+                price_max: body.price_max,
+                area_min: body.area_min,
+                area_max: body.area_max,
+                keyword: body.keyword,
+                enabled: body.enabled,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', id)
+            .eq('user_id', session.user.id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('❌ Supabase UPDATE error:', error);
+            return NextResponse.json({ error: 'Failed to update rule' }, { status: 500 });
+        }
+
+        return NextResponse.json(data, { status: 200 });
+    } catch (e: any) {
+        console.error('❌ API PUT Error:', e.message);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

@@ -6,7 +6,13 @@ import { Select, SelectItem, Input, Button, Spinner } from '@heroui/react';
 import { Bell, List, MessageCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import NotificationRuleCard from './components/NotificationRuleCard';
-import { Sido, Sigu, NotificationRule, NotificationChannel } from './types/notification';
+import { Sido, Sigu, NotificationRule, NotificationChannel } from '../../types/notification';
+import { Icon } from '@iconify/react';
+import NotificationEditModal from './components/NotificationEditModal';
+import NotificationChannels from './components/NotificationChannels';
+import AlertCreator from './components/AlertCreator';
+import DashboardStats from './components/DashboardStats';
+import ViewMatchesModal from './components/ViewMatchesModal';
 
 // 매물 유형 데이터
 const propertyTypes = [
@@ -46,9 +52,27 @@ export default function NotificationRulePage() {
     const [noPriceLimit, setNoPriceLimit] = useState(true);
     const [noAreaLimit, setNoAreaLimit] = useState(true);
 
+    const [viewRuleId, setViewRuleId] = useState<string | null>(null);
+    const [isViewOpen, setIsViewOpen] = useState(false);
+
     const [rules, setRules] = useState<NotificationRule[]>([]);
     const [rulesLoading, setRulesLoading] = useState(true);
 
+    const [editingRule, setEditingRule] = useState<NotificationRule | null>(null);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const handleEditOpen = (rule: NotificationRule) => {
+        setEditingRule(rule);
+        setIsEditOpen(true);
+    };
+
+    const handleViewMatches = (ruleId: string) => {
+        setViewRuleId(ruleId);
+        setIsViewOpen(true);
+    };
+
+    const handleRuleUpdated = (updated: NotificationRule) => {
+        setRules((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    };
     // ✅ Telegram 상태 확인
     const fetchNotificationChannels = async () => {
         setTelegramLoading(true);
@@ -114,6 +138,7 @@ export default function NotificationRulePage() {
             }
 
             const data = await res.json();
+            console.log('🚀 ~ fetchRules ~ data:', data);
 
             if (Array.isArray(data)) {
                 setRules(data);
@@ -154,7 +179,8 @@ export default function NotificationRulePage() {
             area_min: noAreaLimit ? null : areaRange[0],
             area_max: noAreaLimit ? null : areaRange[1],
         };
-
+        console.log('🚀 ~ handleSubmit ~ body:', body);
+        // return;
         setFormLoading(true);
         try {
             const res = await fetch('/api/notification', {
@@ -170,6 +196,32 @@ export default function NotificationRulePage() {
         } finally {
             setFormLoading(false);
         }
+    };
+
+    const handleEdit = async (rule: NotificationRule) => {
+        const res = await fetch(`/api/notification/${rule.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                name: rule.name,
+                category: rule.category,
+                sido_code: rule.sido_code,
+                sigu_code: rule.sigu_code,
+                price_min: rule.price_min,
+                max_price: rule.price_max,
+                area_min: rule.area_min,
+                area_max: rule.area_max,
+                keyword: rule.keyword,
+                enabled: rule.enabled,
+            }),
+        });
+
+        if (!res.ok) {
+            alert('업데이트 실패');
+            return;
+        }
+
+        const updated = await res.json();
+        console.log('업데이트 완료:', updated);
     };
 
     // --- 토글 / 삭제 핸들러 ---
@@ -204,172 +256,20 @@ export default function NotificationRulePage() {
 
     return (
         <div className="max-w-2xl mx-auto my-10 space-y-8">
-            {/* --- 1. 텔레그램 연동 --- */}
-            <Card className="shadow-md rounded-2xl max-xl:m-3">
-                <CardBody className="flex flex-col items-center gap-4 py-6">
-                    <MessageCircle className="text-primary w-6 h-6" />
-                    {telegramLoading ? (
-                        <Spinner color="primary" />
-                    ) : telegramConnected ? (
-                        <p className="text-green-700 font-semibold">텔레그램 연동 완료!</p>
-                    ) : (
-                        <>
-                            <p className="text-gray-600 text-center md:text-sm text-xs">
-                                텔레그램을 연동하면 새 매물 알림을 실시간으로 받을 수 있습니다.
-                            </p>
-                            <Button color="primary" onPress={handleTelegramConnect}>
-                                텔레그램 연동하기
-                            </Button>
-                        </>
-                    )}
-                </CardBody>
-            </Card>
+            <DashboardStats />
+            <NotificationChannels
+                telegramConnected={telegramConnected}
+                telegramLoading={telegramLoading}
+                handleTelegramConnect={handleTelegramConnect}
+                onRefresh={fetchNotificationChannels} // ✅ 모달 내 성공 후 갱신
+            />
 
             {/* --- 2. 알림 조건 추가 --- */}
-            <Card className="shadow-md rounded-2xl max-xl:m-3 ">
-                <CardHeader className="flex items-center gap-2">
-                    <Bell className="text-primary max-xl:w-4 max-xl:h-4" />
-                    <h2 className="font-semibold text-sm xl:text-lg">새 알림 조건 추가</h2>
-                </CardHeader>
-                <CardBody className="flex flex-col gap-6 max-xl:text-xs overflow-hidden">
-                    {regionsLoading ? (
-                        <div className="flex justify-center items-center py-8">
-                            <Spinner color="primary" />
-                            <span className="ml-2 text-sm text-gray-600">지역 정보를 불러오는 중...</span>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Input
-                                    label="알림 이름"
-                                    placeholder="예: 강남 아파트 알림"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    isRequired
-                                    size="sm"
-                                />
-                                <Input
-                                    label="감지할 키워드"
-                                    placeholder="예: 래미안, 아크로"
-                                    value={keyword}
-                                    onChange={(e) => setKeyword(e.target.value)}
-                                    size="sm"
-                                />
-                                <Select
-                                    isRequired
-                                    label="시/도"
-                                    selectedKeys={selectedSido ? new Set([selectedSido]) : new Set()}
-                                    onSelectionChange={(keys) => {
-                                        const value = Array.from(keys)[0];
-                                        setSelectedSido(value ? String(value) : null);
-                                    }}
-                                    items={sidos}
-                                    size="sm"
-                                >
-                                    {(item) => <SelectItem key={item.sido_code}>{item.sido_name}</SelectItem>}
-                                </Select>
-                                <Select
-                                    isRequired
-                                    label="구/군"
-                                    size="sm"
-                                    selectedKeys={selectedSigu ? new Set([selectedSigu]) : new Set()}
-                                    onSelectionChange={(keys) => {
-                                        const value = Array.from(keys)[0];
-                                        setSelectedSigu(value ? String(value) : null);
-                                    }}
-                                    isDisabled={!selectedSido}
-                                    items={sortedSigus}
-                                >
-                                    {(item) => <SelectItem key={item.sigu_code}>{item.sigu_name}</SelectItem>}
-                                </Select>
-
-                                <Select
-                                    label="매물 유형"
-                                    selectedKeys={new Set([category])}
-                                    onSelectionChange={(keys) => {
-                                        const value = Array.from(keys)[0];
-                                        if (value) setCategory(String(value));
-                                    }}
-                                    items={propertyTypes}
-                                    size="sm"
-                                >
-                                    {(item) => <SelectItem key={item.key}>{item.name}</SelectItem>}
-                                </Select>
-                            </div>
-
-                            {/* 💰 가격 범위 */}
-                            <div className="max-lg:text-xs">
-                                <div className="flex justify-between items-center mb-2">
-                                    <label className="block text-sm font-medium text-gray-700">가격 범위</label>
-                                    <Checkbox
-                                        isSelected={noPriceLimit}
-                                        onChange={(e) => setNoPriceLimit(e.target.checked)}
-                                        color="primary"
-                                        size="sm"
-                                    >
-                                        제한 없음
-                                    </Checkbox>
-                                </div>
-                                <Slider
-                                    step={1000}
-                                    maxValue={200000}
-                                    value={priceRange}
-                                    onChange={(v) => setPriceRange(v as [number, number])}
-                                    isDisabled={noPriceLimit}
-                                    aria-label="가격 범위"
-                                    size="sm"
-                                />
-                                {!noPriceLimit && (
-                                    <p className="text-sm text-gray-600 mt-1">
-                                        {formatPrice(priceRange[0])} ~ {formatPrice(priceRange[1])}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* 📐 면적 범위 */}
-                            <div className="max-xl:textxs">
-                                <div className="flex justify-between items-center mb-2">
-                                    <label className="block text-sm font-medium text-gray-700">면적 범위 (㎡)</label>
-                                    <Checkbox
-                                        size="sm"
-                                        isSelected={noAreaLimit}
-                                        onChange={(e) => setNoAreaLimit(e.target.checked)}
-                                        color="primary"
-                                    >
-                                        제한 없음
-                                    </Checkbox>
-                                </div>
-                                <Slider
-                                    step={1}
-                                    maxValue={300}
-                                    value={areaRange}
-                                    onChange={(v) => setAreaRange(v as [number, number])}
-                                    isDisabled={noAreaLimit}
-                                    aria-label="면적 범위"
-                                    size="sm"
-                                />
-                                {!noAreaLimit && (
-                                    <p className="text-sm text-gray-600 mt-1">
-                                        {areaRange[0]}㎡ ~ {areaRange[1]}㎡
-                                    </p>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </CardBody>
-                <CardFooter>
-                    <Button color="primary" fullWidth onPress={handleSubmit} isDisabled={regionsLoading || formLoading}>
-                        {formLoading ? '저장 중...' : '알림 조건 저장'}
-                    </Button>
-                </CardFooter>
-            </Card>
+            <AlertCreator sidos={sidos} siguList={siguList} onSubmit={handleSubmit} loading={formLoading} />
 
             {/* --- 3. 알림 목록 --- */}
-            <div className="space-y-4 max-xl:m-3">
-                <h2 className="flex items-center gap-2 text-xl font-semibold max-lg:text-sm">
-                    <List className="text-gray-700" />
-                    등록된 알림 조건
-                </h2>
+            <div className="space-y-2 md:space-y-4 mx-2 md:mx-0">
+                <h2 className="flex items-center gap-2 text-xl font-semibold max-lg:text-sm">나의 알림</h2>
 
                 {rulesLoading ? (
                     <Card>
@@ -393,10 +293,22 @@ export default function NotificationRulePage() {
                             siguList={siguList}
                             onToggle={handleToggleRule}
                             onDelete={handleDeleteRule}
+                            onEdit={handleEditOpen}
+                            onView={handleViewMatches}
                         />
                     ))
                 )}
             </div>
+            <ViewMatchesModal ruleId={viewRuleId} isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} />
+
+            <NotificationEditModal
+                isOpen={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                rule={editingRule}
+                sidos={sidos}
+                siguList={siguList}
+                onUpdated={handleRuleUpdated}
+            />
         </div>
     );
 }
