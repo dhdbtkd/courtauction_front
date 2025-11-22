@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const maxArea = searchParams.get('maxArea');
 
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '100', 10);
+    const limit = parseInt(searchParams.get('limit') || '100', 12);
 
     try {
         let query = supabase.from('auctions').select('*', { count: 'exact' });
